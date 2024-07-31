@@ -103,7 +103,6 @@ function ViewDetail() {
                 <Box sx={{ mt: 0 }}>
                     <FormControl variant="filled" fullWidth>
                         <p style={{ margin: '4px 0' }}>Detail</p>
-                        <InputLabel htmlFor="comments"></InputLabel>
                         <FroalaEditor
                             tag='textarea'
                             model={editorContent}

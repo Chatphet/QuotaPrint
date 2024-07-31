@@ -35,90 +35,60 @@ function QuotaPrint() {
     const navigate = useNavigate();
 
     useEffect(() => {
-        // Fetch years
-        axios.get('http://localhost:5000/api/year')
-            .then(response => {
-                const yearData = response.data.map(item => item.Year);
-                setYears(yearData);
+    const fetchData = async () => {
+        try {
+            const [yearsResponse, divisionsResponse, statusesResponse, sumYearResponse, sumUserResponse] = await Promise.all([
+                axios.get('http://localhost:5000/api/year'),
+                axios.get('http://localhost:5000/api/division'),
+                axios.get('http://localhost:5000/api/status'),
+                axios.get('http://localhost:5000/api/sumYear'),
+                axios.get('http://localhost:5000/api/sumUser')
+            ]);
 
-                if (yearData.length > 0) {
-                    const mostRecentYear = yearData[0];
-                    setFilterYear(mostRecentYear);
-                    fetchFilteredData(mostRecentYear, filterDivision, filterUser, filterStartDate, filterEndDate, filterStatus, filterBlackWhite, filterColor);
-                }
-            })
-            .catch(error => {
-                console.error('Error fetching years:', error);
-            });
+            const yearData = yearsResponse.data.map(item => item.Year);
+            const divisionData = divisionsResponse.data.map(item => item.divisionName);
+            const statusData = statusesResponse.data.map(item => item.requestStatus);
+            setYears(yearData);
+            setDivisions(divisionData);
+            setStatuses(statusData);
 
-        // Fetch divisions
-        axios.get('http://localhost:5000/api/division')
-            .then(response => {
-                const divisionData = response.data.map(item => item.divisionName);
-                setDivisions(divisionData);
-            })
-            .catch(error => {
-                console.error('Error fetching divisions:', error);
-            });
+            setSumYearData(sumYearResponse.data);
+            setSumUserData(sumUserResponse.data);
 
-        // Fetch statuses
-        axios.get('http://localhost:5000/api/status')
-            .then(response => {
-                const statusData = response.data.map(item => item.requestStatus);
-                setStatuses(statusData);
-            })
-            .catch(error => {
-                console.error('Error fetching statuses:', error);
-            });
+            if (sumYearResponse.data.length > 0) {
+                const mostRecentYear = Math.max(...sumYearResponse.data.map(item => item.year));
+                setFilterYear(mostRecentYear);
+                setFilterCriteria(prevCriteria => ({ ...prevCriteria, year: mostRecentYear }));
+                fetchFilteredData(mostRecentYear);
+            }
+        } catch (error) {
+            console.error('Error fetching data:', error);
+        }
+    };
 
-        axios.get('http://localhost:5000/api/sumYear')
-            .then(response => {
-                setSumYearData(response.data);
+    fetchData();
+}, []); // ทำให้ useEffect ทำงานเพียงครั้งเดียวเมื่อ component ถูกโหลด
 
-                const yearsInData = response.data.map(item => item.year);
-                if (yearsInData.length > 0) {
-                    const mostRecentYear = Math.max(...yearsInData);
-                    setFilterYear(mostRecentYear);
-                    setFilterCriteria(prevCriteria => ({ ...prevCriteria, year: mostRecentYear }));
-                }
-            })
-            .catch(error => {
-                console.error('Error fetching sumYear data:', error);
-            });
+useEffect(() => {
+    // Filter sumYearData based on filter criteria
+    const filteredSumYear = sumYearData.filter(item => {
+        const isYearMatch = !filterCriteria.year || item.year === filterCriteria.year;
+        const isBlackWhiteMatch = !filterCriteria.blackWhite || item.totalBlackWhite > 0;
+        const isColorMatch = !filterCriteria.color || item.totalColor > 0;
 
-        axios.get('http://localhost:5000/api/sumUser')
-            .then(response => {
-                setSumUserData(response.data);
-                const filteredSumUser = response.data.filter(item => {
-                    const isYearMatch = !filterCriteria.year || item.year === filterCriteria.year;
-                    return isYearMatch;
-                });
-                setFilteredSumUserData(filteredSumUser);
-            })
-            .catch(error => {
-                console.error('Error fetching sumUser data:', error);
-            });
+        return isYearMatch && isBlackWhiteMatch && isColorMatch;
+    });
 
-    }, []);
+    setFilteredSumYearData(filteredSumYear);
 
-    useEffect(() => {
-        const filteredSumYear = sumYearData.filter(item => {
-            const isYearMatch = !filterCriteria.year || item.year === filterCriteria.year;
-            const isBlackWhiteMatch = !filterCriteria.blackWhite || item.totalBlackWhite > 0;
-            const isColorMatch = !filterCriteria.color || item.totalColor > 0;
+    // Also filter sumUserData based on filter criteria
+    const filteredSumUser = sumUserData.filter(item => {
+        const isYearMatch = !filterCriteria.year || item.year === filterCriteria.year;
+        return isYearMatch;
+    });
 
-            return isYearMatch && isBlackWhiteMatch && isColorMatch;
-        });
-
-        setFilteredSumYearData(filteredSumYear);
-
-        const filteredSumUser = sumUserData.filter(item => {
-            const isYearMatch = !filterCriteria.year || item.year === filterCriteria.year;
-            return isYearMatch;
-        });
-
-        setFilteredSumUserData(filteredSumUser);
-    }, [filterCriteria, sumYearData, sumUserData]);
+    setFilteredSumUserData(filteredSumUser);
+}, [filterCriteria, sumYearData, sumUserData]);
 
     const fetchFilteredData = (year, division, user, startDate, endDate, status, blackWhite, color) => {
         axios.get('http://localhost:5000/api/list', {
@@ -150,6 +120,7 @@ function QuotaPrint() {
     };
 
     const handleFilter = () => {
+        // Update filter criteria state
         setFilterCriteria({
             year: filterYear,
             blackWhite: filterBlackWhite,

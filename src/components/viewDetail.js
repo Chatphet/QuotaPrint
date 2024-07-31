@@ -1,6 +1,6 @@
 import React, { useState, useEffect } from 'react';
 import { useLocation, useNavigate } from 'react-router-dom';
-import { Box, FormControl, InputLabel, FilledInput, Checkbox, FormControlLabel, Button } from '@mui/material';
+import { Box, FormControl, InputLabel, FilledInput, Checkbox, FormControlLabel, Button, CircularProgress } from '@mui/material';
 import FroalaEditor from 'react-froala-wysiwyg';
 import 'froala-editor/css/froala_editor.pkgd.min.css';
 
@@ -9,20 +9,29 @@ function ViewDetail() {
     const navigate = useNavigate();
     const { data } = location.state || {};
     const [editorContent, setEditorContent] = useState('');
+    const [loading, setLoading] = useState(true);
 
     useEffect(() => {
         if (data && data.requestDetail) {
             setEditorContent(data.requestDetail);
         }
+        setLoading(false);
     }, [data]);
 
     const handleBackClick = () => {
         navigate(-1);
     };
 
+    if (loading) {
+        return <CircularProgress />;
+    }
+
     if (!data) {
         return <div>No data available</div>;
     }
+
+    const isBlackWhiteChecked = Boolean(data.blackWhite);
+    const isColorChecked = Boolean(data.color);
 
     return (
         <Box sx={{ p: 2 }}>
@@ -62,7 +71,7 @@ function ViewDetail() {
                 <Box sx={{ display: 'flex', gap: 2, alignItems: 'center' }}>
                     <Box sx={{ display: 'flex', alignItems: 'center', gap: 2, width: '30%' }}>
                         <FormControlLabel
-                            control={<Checkbox checked={data.blackWhite || false} />}
+                            control={<Checkbox checked={isBlackWhiteChecked} />}
                             label="ขาวดำ (black/white)"
                         />
                         <Box sx={{ width: '45%' }}>
@@ -74,7 +83,7 @@ function ViewDetail() {
                     </Box>
                     <Box sx={{ display: 'flex', alignItems: 'center', gap: 2, width: '30%' }}>
                         <FormControlLabel
-                            control={<Checkbox checked={data.color || false} />}
+                            control={<Checkbox checked={isColorChecked} />}
                             label="สี (color)"
                         />
                         <Box sx={{ width: '45%' }}>
@@ -101,7 +110,9 @@ function ViewDetail() {
                             onModelChange={setEditorContent}
                             config={{
                                 placeholderText: '',
-                                toolbarButtons: ['bold', 'italic', 'underline', 'strikeThrough', 'subscript', 'superscript', 'color', 'undo', 'redo']
+                                toolbarButtons: ['bold', 'italic', 'underline', 'strikeThrough', 'subscript', 'superscript', 'color', 'undo', 'redo'],
+                                heightMin: 100,
+                                heightMax: 250
                             }}
                         />
                     </FormControl>

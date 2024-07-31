@@ -35,60 +35,61 @@ function QuotaPrint() {
     const navigate = useNavigate();
 
     useEffect(() => {
-    const fetchData = async () => {
-        try {
-            const [yearsResponse, divisionsResponse, statusesResponse, sumYearResponse, sumUserResponse] = await Promise.all([
-                axios.get('http://localhost:5000/api/year'),
-                axios.get('http://localhost:5000/api/division'),
-                axios.get('http://localhost:5000/api/status'),
-                axios.get('http://localhost:5000/api/sumYear'),
-                axios.get('http://localhost:5000/api/sumUser')
-            ]);
+        const fetchData = async () => {
+            try {
+                const [divisionsResponse, statusesResponse, sumYearResponse, sumUserResponse] = await Promise.all([
+                    axios.get('http://localhost:5000/api/division'),
+                    axios.get('http://localhost:5000/api/status'),
+                    axios.get('http://localhost:5000/api/sumYear'),
+                    axios.get('http://localhost:5000/api/sumUser')
+                ]);
 
-            const yearData = yearsResponse.data.map(item => item.Year);
-            const divisionData = divisionsResponse.data.map(item => item.divisionName);
-            const statusData = statusesResponse.data.map(item => item.requestStatus);
-            setYears(yearData);
-            setDivisions(divisionData);
-            setStatuses(statusData);
+                const divisionData = divisionsResponse.data.map(item => item.divisionName);
+                const statusData = statusesResponse.data.map(item => item.requestStatus);
+                setDivisions(divisionData);
+                setStatuses(statusData);
 
-            setSumYearData(sumYearResponse.data);
-            setSumUserData(sumUserResponse.data);
+                const sumYearData = sumYearResponse.data;
+                const yearData = [...new Set(sumYearData.map(item => item.year))]; // สร้างลิสต์ปีที่ไม่ซ้ำ
+                setYears(yearData);
 
-            if (sumYearResponse.data.length > 0) {
-                const mostRecentYear = Math.max(...sumYearResponse.data.map(item => item.year));
-                setFilterYear(mostRecentYear);
-                setFilterCriteria(prevCriteria => ({ ...prevCriteria, year: mostRecentYear }));
-                fetchFilteredData(mostRecentYear);
+                setSumYearData(sumYearData);
+                setSumUserData(sumUserResponse.data);
+
+                if (sumYearData.length > 0) {
+                    const mostRecentYear = Math.max(...sumYearData.map(item => item.year));
+                    setFilterYear(mostRecentYear);
+                    setFilterCriteria(prevCriteria => ({ ...prevCriteria, year: mostRecentYear }));
+                    fetchFilteredData(mostRecentYear);
+                }
+            } catch (error) {
+                console.error('Error fetching data:', error);
             }
-        } catch (error) {
-            console.error('Error fetching data:', error);
-        }
-    };
+        };
 
-    fetchData();
-}, []); // ทำให้ useEffect ทำงานเพียงครั้งเดียวเมื่อ component ถูกโหลด
+        fetchData();
+    }, []); // ทำให้ useEffect ทำงานเพียงครั้งเดียวเมื่อ component ถูกโหลด
 
-useEffect(() => {
-    // Filter sumYearData based on filter criteria
-    const filteredSumYear = sumYearData.filter(item => {
-        const isYearMatch = !filterCriteria.year || item.year === filterCriteria.year;
-        const isBlackWhiteMatch = !filterCriteria.blackWhite || item.totalBlackWhite > 0;
-        const isColorMatch = !filterCriteria.color || item.totalColor > 0;
+    useEffect(() => {
+        // Filter sumYearData based on filter criteria
+        const filteredSumYear = sumYearData.filter(item => {
+            const isYearMatch = !filterCriteria.year || item.year === filterCriteria.year;
+            const isBlackWhiteMatch = !filterCriteria.blackWhite || item.totalBlackWhite > 0;
+            const isColorMatch = !filterCriteria.color || item.totalColor > 0;
 
-        return isYearMatch && isBlackWhiteMatch && isColorMatch;
-    });
+            return isYearMatch && isBlackWhiteMatch && isColorMatch;
+        });
 
-    setFilteredSumYearData(filteredSumYear);
+        setFilteredSumYearData(filteredSumYear);
 
-    // Also filter sumUserData based on filter criteria
-    const filteredSumUser = sumUserData.filter(item => {
-        const isYearMatch = !filterCriteria.year || item.year === filterCriteria.year;
-        return isYearMatch;
-    });
+        // Also filter sumUserData based on filter criteria
+        const filteredSumUser = sumUserData.filter(item => {
+            const isYearMatch = !filterCriteria.year || item.year === filterCriteria.year;
+            return isYearMatch;
+        });
 
-    setFilteredSumUserData(filteredSumUser);
-}, [filterCriteria, sumYearData, sumUserData]);
+        setFilteredSumUserData(filteredSumUser);
+    }, [filterCriteria, sumYearData, sumUserData]);
 
     const fetchFilteredData = (year, division, user, startDate, endDate, status, blackWhite, color) => {
         axios.get('http://localhost:5000/api/list', {
@@ -167,6 +168,11 @@ useEffect(() => {
         const searchText = event.target.value;
         setSearchText(searchText);
 
+        if (!searchText.trim()) {
+            setFilteredData(data);
+            return;
+        }
+
         const filtered = data.filter(item => {
             const lowerSearchText = searchText.toLowerCase();
             return (
@@ -207,32 +213,31 @@ useEffect(() => {
                 </Button>
             </div>
             <div style={{ display: 'flex', flexDirection: 'column', alignItems: 'flex-start' }}>
-                <div style={{ width: '100%', height: 400 }}>
+                <div style={{ height: 600, width: '100%' }}>
                     <DataGrid
                         rows={filteredData.map((row, index) => ({ id: index, ...row }))}
                         columns={columns}
-                        pageSize={5}
-                        checkboxSelection={true}
-                        autoHeight
+                        pageSize={10}
+                        rowsPerPageOptions={[10]}
                     />
                 </div>
             </div>
 
+            {/* Filter Modal */}
             <Modal
                 open={filterModalOpen}
                 onClose={() => setFilterModalOpen(false)}
-                aria-labelledby="filter-modal-title"
-                aria-describedby="filter-modal-description"
+                aria-labelledby="modal-title"
+                aria-describedby="modal-description"
             >
-                <Box sx={{ position: 'absolute', top: '50%', left: '50%', transform: 'translate(-50%, -50%)', width: 400, bgcolor: 'background.paper', border: '1px solid #000', boxShadow: 24, p: 4 }}>
-                    <h2 id="filter-modal-title">Filters</h2>
-                    <FormControl fullWidth style={{ marginBottom: '20px' }}>
-                        <InputLabel id="filter-year-label">Select Year</InputLabel>
+                <Box sx={{ width: 400, p: 3, backgroundColor: 'white', margin: 'auto', marginTop: '10%', borderRadius: 1, boxShadow: 3 }}>
+                    <h2 id="modal-title" style={{ textAlign: 'center' }}>Filter Options</h2>
+                    <FormControl fullWidth margin="normal">
+                        <InputLabel id="year-label">Select Year</InputLabel>
                         <Select
-                            labelId="filter-year-label"
-                            id="filter-year"
-                            value={filterYear}
+                            labelId="year-label"
                             label="Select Year"
+                            value={filterYear}
                             onChange={(e) => setFilterYear(e.target.value)}
                         >
                             <MenuItem value=""><em>None</em></MenuItem>
@@ -241,13 +246,12 @@ useEffect(() => {
                             ))}
                         </Select>
                     </FormControl>
-                    <FormControl fullWidth style={{ marginBottom: '20px' }}>
-                        <InputLabel id="filter-division-label">Select Division</InputLabel>
+                    <FormControl fullWidth margin="normal">
+                        <InputLabel id="division-label">Select Division</InputLabel>
                         <Select
-                            labelId="filter-division-label"
-                            id="filter-division"
-                            value={filterDivision}
+                            labelId="division-label"
                             label="Select Division"
+                            value={filterDivision}
                             onChange={(e) => setFilterDivision(e.target.value)}
                         >
                             <MenuItem value=""><em>None</em></MenuItem>
@@ -257,12 +261,12 @@ useEffect(() => {
                         </Select>
                     </FormControl>
                     <TextField
-                        label="User"
+                        label="Search User"
                         variant="outlined"
                         value={filterUser}
                         onChange={(e) => setFilterUser(e.target.value)}
                         fullWidth
-                        style={{ marginBottom: '20px' }}
+                        margin="normal"
                     />
                     <TextField
                         label="Start Date"
@@ -271,7 +275,7 @@ useEffect(() => {
                         value={filterStartDate ? moment(filterStartDate).format('YYYY-MM-DD') : ''}
                         onChange={(e) => setFilterStartDate(e.target.value)}
                         fullWidth
-                        style={{ marginBottom: '20px' }}
+                        margin="normal"
                         InputLabelProps={{ shrink: true }}
                     />
                     <TextField
@@ -281,16 +285,15 @@ useEffect(() => {
                         value={filterEndDate ? moment(filterEndDate).format('YYYY-MM-DD') : ''}
                         onChange={(e) => setFilterEndDate(e.target.value)}
                         fullWidth
-                        style={{ marginBottom: '20px' }}
+                        margin="normal"
                         InputLabelProps={{ shrink: true }}
                     />
-                    <FormControl fullWidth style={{ marginBottom: '20px' }}>
-                        <InputLabel id="filter-status-label">Select Status</InputLabel>
+                    <FormControl fullWidth margin="normal">
+                        <InputLabel id="status-label">Select Status</InputLabel>
                         <Select
-                            labelId="filter-status-label"
-                            id="filter-status"
-                            value={filterStatus}
+                            labelId="status-label"
                             label="Select Status"
+                            value={filterStatus}
                             onChange={(e) => setFilterStatus(e.target.value)}
                         >
                             <MenuItem value=""><em>None</em></MenuItem>
@@ -300,12 +303,22 @@ useEffect(() => {
                         </Select>
                     </FormControl>
                     <FormControlLabel
-                        control={<Checkbox checked={filterBlackWhite} onChange={(e) => setFilterBlackWhite(e.target.checked)} />}
-                        label="Filter Black & White"
+                        control={
+                            <Checkbox
+                                checked={filterBlackWhite}
+                                onChange={(e) => setFilterBlackWhite(e.target.checked)}
+                            />
+                        }
+                        label="Black & White"
                     />
                     <FormControlLabel
-                        control={<Checkbox checked={filterColor} onChange={(e) => setFilterColor(e.target.checked)} />}
-                        label="Filter Color"
+                        control={
+                            <Checkbox
+                                checked={filterColor}
+                                onChange={(e) => setFilterColor(e.target.checked)}
+                            />
+                        }
+                        label="Color"
                     />
                     <Box style={{ display: 'flex', justifyContent: 'flex-end', marginTop: '20px' }}>
                         <Button variant="outlined" onClick={() => setFilterModalOpen(false)} style={{ marginRight: '10px' }}>

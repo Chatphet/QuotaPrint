@@ -19,7 +19,7 @@ function PieChartList({ data }) {
             data: pieData,
           },
         ]}
-        height={220}
+        height={200}
       />
     </div>
   );

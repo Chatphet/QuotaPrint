@@ -327,7 +327,7 @@ function QuotaPrint() {
                                 onChange={(e) => setFilterBlackWhite(e.target.checked)}
                             />
                         }
-                        label="Black & White"
+                        label="Black&White"
                     />
                     <FormControlLabel
                         control={

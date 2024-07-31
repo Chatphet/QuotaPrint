@@ -18,7 +18,8 @@ app.get("/api/list", async function (req, res, next) {
     const blackWhite = req.query.blackWhite;
     const color = req.query.color;
     
-    console.log('Filters received:', { year, division, user, startDate, endDate, status, blackWhite, color });
+    // console.log('Filters received 1:', { year, division, user, startDate, endDate, status, blackWhite, color });
+    // console.log('------------');
 
     let sqlQuery = `SELECT r.*, qp.black_white AS blackWhite,
                             qp.color AS color, 
@@ -87,18 +88,29 @@ app.get("/api/list", async function (req, res, next) {
 });
 
 app.get("/api/sumYear", async function (req, res, next) {
+    const year = req.query.year;
+    // console.log('Filters received 2:', { year });
+    // console.log('------------');
+
+    let sqlQuery = `SELECT YEAR(r.deliveryDate) AS year, 
+                            SUM(qp.black_white) AS totalBlackWhite, 
+                            SUM(qp.color) AS totalColor
+                    FROM QuotaPrint qp
+                    INNER JOIN Request r ON r.requestID = qp.requestID
+                    WHERE 1=1`;
+
+    let queryParams = [];
+    
+    if (year) {
+        sqlQuery += ` AND YEAR(r.deliveryDate) = @year`;
+        queryParams.push({ name: 'year', type: sql.Int, value: parseInt(year) });
+    }
+
+    sqlQuery += ` GROUP BY YEAR(r.deliveryDate)
+                  ORDER BY Year DESC;`;
+
     try {
-        const data = await connectAndQuery(`SELECT YEAR(r.deliveryDate) AS year, 
-                                                SUM(qp.black_white) AS totalBlackWhite, 
-                                                SUM(qp.color) AS totalColor
-                                            FROM
-                                                QuotaPrint qp
-                                            INNER JOIN
-                                                Request r ON r.requestID = qp.requestID
-                                            GROUP BY
-                                                YEAR(r.deliveryDate)
-                                            ORDER BY 
-                                                Year;`);
+        const data = await connectAndQuery(sqlQuery, queryParams);
         res.json(data);
     } catch (error) {
         console.error('Error querying database:', error);
@@ -106,25 +118,38 @@ app.get("/api/sumYear", async function (req, res, next) {
     }
 });
 
+
 app.get("/api/sumUser", async function (req, res, next) {
+    const year = req.query.year;
+    // console.log('Filters received 3:', { year });
+    // console.log('------------');
+
+    let sqlQuery = `SELECT YEAR(r.deliveryDate) AS year, 
+                            r.requester,
+                            SUM(qp.black_white + qp.color) AS sumUserYear
+                    FROM QuotaPrint qp
+                    INNER JOIN Request r ON r.requestID = qp.requestID
+                    WHERE 1=1`;
+
+    let queryParams = [];
+    
+    if (year) {
+        sqlQuery += ` AND YEAR(r.deliveryDate) = @year`;
+        queryParams.push({ name: 'year', type: sql.Int, value: parseInt(year) });
+    }
+
+    sqlQuery += ` GROUP BY r.requester, YEAR(r.deliveryDate)
+                  ORDER BY year DESC;`;
+
     try {
-        const data = await connectAndQuery(`SELECT YEAR(r.deliveryDate) AS year, 
-                                                r.requester ,
-                                                SUM(qp.black_white + qp.color) AS sumUserYear
-                                            FROM
-                                                QuotaPrint qp
-                                            INNER JOIN
-                                                Request r ON r.requestID = qp.requestID
-                                            GROUP BY
-                                                r.requester, YEAR(r.deliveryDate)
-                                            ORDER BY
-                                                year DESC;`);
+        const data = await connectAndQuery(sqlQuery, queryParams);
         res.json(data);
     } catch (error) {
         console.error('Error querying database:', error);
         res.status(500).json({ error: 'Internal Server Error' });
     }
 });
+
 
 app.get("/api/division", async function (req, res, next) {
     try {

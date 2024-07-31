@@ -26,13 +26,13 @@ app.get("/api/list", async function (req, res, next) {
                             SUM(qp.black_white + qp.color) OVER (PARTITION BY r.requester, YEAR(r.deliveryDate)) AS sumUserYear,
                             rs.requestStatus AS requestStatus,
                             rt.requestTypeName,
-							st.subjectTypeName,
+                            st.subjectTypeName,
                             p.priorityName,
                             YEAR(r.deliveryDate) AS year
                     FROM QuotaPrint qp
                     INNER JOIN Request r ON r.requestID = qp.requestID
                     INNER JOIN RequestType rt ON rt.requestTypeID = r.requestTypeID
-					INNER JOIN SubjectType st ON st.subjectTypeID = r.subjectTypeID
+                    INNER JOIN SubjectType st ON st.subjectTypeID = r.subjectTypeID
                     INNER JOIN RequestStatus rs ON rs.requestStatusID = r.requestStatusID
                     INNER JOIN Priority p ON p.priorityID = r.priorityID
                     WHERE 1=1`;
@@ -110,33 +110,15 @@ app.get("/api/sumUser", async function (req, res, next) {
     try {
         const data = await connectAndQuery(`SELECT YEAR(r.deliveryDate) AS year, 
                                                 r.requester ,
-												SUM(qp.black_white + qp.color) AS sumUserYear
+                                                SUM(qp.black_white + qp.color) AS sumUserYear
                                             FROM
                                                 QuotaPrint qp
                                             INNER JOIN
                                                 Request r ON r.requestID = qp.requestID
                                             GROUP BY
-												r.requester, YEAR(r.deliveryDate)
-											ORDER BY
-												year;`);
-        res.json(data);
-    } catch (error) {
-        console.error('Error querying database:', error);
-        res.status(500).json({ error: 'Internal Server Error' });
-    }
-});
-
-app.get("/api/year", async function (req, res, next) {
-    try {
-        const data = await connectAndQuery(`SELECT YEAR(r.deliveryDate) AS Year
-                                            FROM 
-                                                Request r
-                                            INNER JOIN
-	                                            QuotaPrint qp ON qp.requestID = r.requestID
-                                            GROUP BY 
-                                                YEAR(r.deliveryDate)
-                                            ORDER BY   
-                                                YEAR(r.deliveryDate) DESC;`);
+                                                r.requester, YEAR(r.deliveryDate)
+                                            ORDER BY
+                                                year DESC;`);
         res.json(data);
     } catch (error) {
         console.error('Error querying database:', error);

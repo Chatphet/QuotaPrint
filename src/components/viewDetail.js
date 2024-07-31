@@ -112,7 +112,7 @@ function ViewDetail() {
                                 placeholderText: '',
                                 toolbarButtons: ['bold', 'italic', 'underline', 'strikeThrough', 'subscript', 'superscript', 'color', 'undo', 'redo'],
                                 heightMin: 100,
-                                heightMax: 250
+                                heightMax: 250,
                             }}
                         />
                     </FormControl>

@@ -68,10 +68,10 @@ function QuotaPrint() {
         };
 
         fetchData();
-    }, []); // ทำให้ useEffect ทำงานเพียงครั้งเดียวเมื่อ component ถูกโหลด
+    }, []);
 
     useEffect(() => {
-        // Filter sumYearData based on filter criteria
+        
         const filteredSumYear = sumYearData.filter(item => {
             const isYearMatch = !filterCriteria.year || item.year === filterCriteria.year;
             const isBlackWhiteMatch = !filterCriteria.blackWhite || item.totalBlackWhite > 0;
@@ -82,7 +82,6 @@ function QuotaPrint() {
 
         setFilteredSumYearData(filteredSumYear);
 
-        // Also filter sumUserData based on filter criteria
         const filteredSumUser = sumUserData.filter(item => {
             const isYearMatch = !filterCriteria.year || item.year === filterCriteria.year;
             return isYearMatch;
@@ -137,7 +136,7 @@ function QuotaPrint() {
     };
 
     const handleFilter = () => {
-        // Update filter criteria state
+        
         setFilterCriteria({
             year: filterYear,
             blackWhite: filterBlackWhite,
@@ -208,11 +207,11 @@ function QuotaPrint() {
     return (
         <div>
             <h1 style={{ display: 'flex', alignItems: 'center', justifyContent: 'center' }}>Quota Print</h1>
-            <div style={{ display: 'flex', justifyContent: 'space-between', marginBottom: '20px' }}>
-                <div style={{ flex: 1, marginLeft: '10%' }}>
+            <div style={{ display: 'flex', justifyContent: 'space-between', marginBottom: '20px', padding: '0 5%' }}>
+                <div style={{ flex: 1 }}>
                     <PieChartYear data={filteredSumYearData} />
                 </div>
-                <div style={{ flex: 1, marginRight: '10%' }}>
+                <div style={{ flex: 1 }}>
                     <PieChartList data={filteredSumUserData} />
                 </div>
             </div>
@@ -233,15 +232,18 @@ function QuotaPrint() {
                     <DataGrid
                         rows={filteredData.map((row, index) => ({ id: index, ...row }))}
                         columns={columns}
-                        pageSize={10}
                         checkboxSelection={true}
                         autoHeight
-                        rowsPerPageOptions={[10]}
+                        initialState={{
+                            pagination: {
+                              paginationModel: { page: 0, pageSize: 20 },
+                            },
+                          }}
+                        pageSizeOptions={[20, 30, 40, 50]}
                     />
                 </div>
             </div>
 
-            {/* Filter Modal */}
             <Modal
                 open={filterModalOpen}
                 onClose={() => setFilterModalOpen(false)}

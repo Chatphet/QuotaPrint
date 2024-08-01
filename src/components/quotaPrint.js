@@ -239,7 +239,7 @@ function QuotaPrint() {
                               paginationModel: { page: 0, pageSize: 20 },
                             },
                           }}
-                        pageSizeOptions={[20, 30, 40, 50]}
+                        pageSizeOptions={[20, 40, 60, 80, 100]}
                     />
                 </div>
             </div>

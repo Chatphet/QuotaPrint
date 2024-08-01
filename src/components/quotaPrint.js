@@ -50,7 +50,7 @@ function QuotaPrint() {
                 setStatuses(statusData);
 
                 const sumYearData = sumYearResponse.data;
-                const yearData = [...new Set(sumYearData.map(item => item.year))].sort((a, b) => b - a); // สร้างลิสต์ปีที่ไม่ซ้ำและเรียงลำดับจากมากไปน้อย
+                const yearData = [...new Set(sumYearData.map(item => item.year))].sort((a, b) => b - a);
                 setYears(yearData);
 
                 setSumYearData(sumYearData);

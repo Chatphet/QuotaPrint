@@ -91,52 +91,58 @@ function QuotaPrint() {
     }, [filterCriteria, sumYearData, sumUserData]);
 
     const fetchFilteredData = async (year, division, user, startDate, endDate, status, blackWhite, color) => {
-        try {
-            const [listResponse, sumYearResponse, sumUserResponse] = await Promise.all([
-                axios.get('http://localhost:5000/api/list', {
-                    params: {
-                        year,
-                        division,
-                        user,
-                        startDate: startDate ? moment(startDate).format('YYYY-MM-DD') : null,
-                        endDate: endDate ? moment(endDate).format('YYYY-MM-DD') : null,
-                        status,
-                        blackWhite,
-                        color
-                    }
-                }),
-                axios.get('http://localhost:5000/api/sumYear', {
-                    params: { year }
-                }),
-                axios.get('http://localhost:5000/api/sumUser', {
-                    params: { year }
-                })
-            ]);
-    
-            // console.log('List Response Data:', listResponse.data);
-            // console.log('Sum Year Response Data:', sumYearResponse.data);
-            // console.log('Sum User Response Data:', sumUserResponse.data);
-    
-            const formattedData = listResponse.data.map(row => ({
-                ...row,
-                deliveryDate: moment(row.deliveryDate).format('DD-MM-YYYY'),
-                requestDateStart: moment(row.requestDateStart).format('DD-MM-YYYY'),
-                requestDateEnd: moment(row.requestDateEnd).format('DD-MM-YYYY'),
-                priorityName: row.priorityName
-            }));
-    
-            setData(formattedData);
-            setFilteredData(formattedData);
-            setSumYearData(sumYearResponse.data);
-            setSumUserData(sumUserResponse.data);
-    
-        } catch (error) {
-            console.error('Error fetching filtered data:', error);
-        }
-    };
+    try {
+        const [listResponse, sumYearResponse, sumUserResponse, divisionResponse] = await Promise.all([
+            axios.get('http://localhost:5000/api/list', {
+                params: {
+                    year,
+                    division,
+                    user,
+                    startDate: startDate ? moment(startDate).format('YYYY-MM-DD') : null,
+                    endDate: endDate ? moment(endDate).format('YYYY-MM-DD') : null,
+                    status,
+                    blackWhite,
+                    color
+                }
+            }),
+            axios.get('http://localhost:5000/api/sumYear', {
+                params: { year }
+            }),
+            axios.get('http://localhost:5000/api/sumUser', {
+                params: { year }
+            }),
+            axios.get('http://localhost:5000/api/division', {
+                params: { year }
+            }),
+        ]);
+
+        // console.log('List Response Data:', listResponse.data);
+        // console.log('Sum Year Response Data:', sumYearResponse.data);
+        // console.log('Sum User Response Data:', sumUserResponse.data);
+        // console.log('Division Response Data:', divisionResponse.data);
+
+        const formattedData = listResponse.data.map(row => ({
+            ...row,
+            deliveryDate: moment(row.deliveryDate).format('DD-MM-YYYY'),
+            requestDateStart: moment(row.requestDateStart).format('DD-MM-YYYY'),
+            requestDateEnd: moment(row.requestDateEnd).format('DD-MM-YYYY'),
+            priorityName: row.priorityName
+        }));
+
+        setData(formattedData);
+        setFilteredData(formattedData);
+        setSumYearData(sumYearResponse.data);
+        setSumUserData(sumUserResponse.data);
+        setDivisions(divisionResponse.data.map(item => item.divisionName));
+
+    } catch (error) {
+        console.error('Error fetching filtered data:', error);
+    }
+};
+
 
     const handleFilter = () => {
-        
+
         setFilterCriteria({
             year: filterYear,
             blackWhite: filterBlackWhite,
@@ -207,7 +213,7 @@ function QuotaPrint() {
     return (
         <div>
             <h1 style={{ display: 'flex', alignItems: 'center', justifyContent: 'center' }}>Quota Print</h1>
-            <div style={{ display: 'flex', justifyContent: 'space-between', marginBottom: '20px', padding: '0 5%' }}>
+            <div style={{ display: 'flex', justifyContent: 'space-between', marginBottom: '20px', padding: '0 1%' }}>
                 <div style={{ flex: 1 }}>
                     <PieChartYear data={filteredSumYearData} />
                 </div>

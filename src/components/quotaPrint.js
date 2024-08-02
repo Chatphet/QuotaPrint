@@ -71,7 +71,7 @@ function QuotaPrint() {
     }, []);
 
     useEffect(() => {
-
+        
         const filteredSumYear = sumYearData.filter(item => {
             const isYearMatch = !filterCriteria.year || item.year === filterCriteria.year;
             const isBlackWhiteMatch = !filterCriteria.blackWhite || item.totalBlackWhite > 0;
@@ -207,7 +207,7 @@ function QuotaPrint() {
     return (
         <div>
             <h1 style={{ display: 'flex', alignItems: 'center', justifyContent: 'center' }}>Quota Print</h1>
-            <div style={{ display: 'flex', justifyContent: 'space-between', marginBottom: '20px', padding: '0 1%' }}>
+            <div style={{ display: 'flex', justifyContent: 'space-between', marginBottom: '10px', padding: '0 1%' }}>
                 <div style={{ flex: 1 }}>
                     <PieChartYear data={filteredSumYearData} />
                 </div>
@@ -215,19 +215,19 @@ function QuotaPrint() {
                     <PieChartList data={filteredSumUserData} />
                 </div>
             </div>
-            <div style={{ display: 'flex', marginBottom: '20px' }}>
+            <div style={{ display: 'flex', margin: '10px 0' }}>
                 <TextField
                     label="Search"
                     variant="outlined"
                     value={searchText}
                     onChange={handleSearch}
-                    style={{ marginRight: '10px', width: '400px' }}
+                    style={{ margin: '0 10px', width: '400px' }}
                 />
-                <Button variant="outlined" onClick={() => setFilterModalOpen(true)}>
+                <Button variant="outlined" onClick={() => setFilterModalOpen(true)} style={{ marginRight: '10px' }}>
                     Filter
                 </Button>
             </div>
-            <div style={{ display: 'flex', flexDirection: 'column', alignItems: 'flex-start' }}>
+            <div style={{ display: 'flex', flexDirection: 'column', alignItems: 'flex-start', margin: '0 10px' }}>
                 <div style={{ height: 600, width: '100%' }}>
                     <DataGrid
                         rows={filteredData.map((row, index) => ({ id: index, ...row }))}

@@ -6,9 +6,14 @@ function PieChartList({ data }) {
   const pieData = data.map((item, index) => ({
     id: index,
     value: item.sumUserYear,
-    label: `${item.requester} ${item.sumUserYear} แผ่น`,
+    label: `${item.requester}`,
     
   }))
+
+  const size = {
+    // width: 550,
+    height: 200,
+  };
 
   return (
     <div>  
@@ -19,7 +24,8 @@ function PieChartList({ data }) {
             data: pieData,
           },
         ]}
-        height={200}
+        
+        {...size}
       />
     </div>
   );

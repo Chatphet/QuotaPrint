@@ -10,12 +10,12 @@ function PieChartYear({ data }) {
     {
       id: `BlackWhite-${item.year}`,
       value: item.totalBlackWhite,
-      label: `Black&White ${item.year}`,
+      label: `Black&White ปี ${item.year}`,
     },
     {
       id: `Color-${item.year}`,
       value: item.totalColor,
-      label: `Color ${item.year}`,
+      label: `Color ปี ${item.year}`,
     }
   ]);
 

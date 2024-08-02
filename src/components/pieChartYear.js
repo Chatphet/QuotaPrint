@@ -19,6 +19,11 @@ function PieChartYear({ data }) {
     }
   ]);
 
+  const size = {
+    // width: 550,
+    height: 200,
+  };
+
   return (
     <div>
       <Typography variant="h6" style={{ display: 'flex', alignItems: 'center', justifyContent: 'center' }}>รายปี</Typography>
@@ -28,7 +33,7 @@ function PieChartYear({ data }) {
             data: pieData,
           },
         ]}
-        height={200}
+        {...size}
       />
     </div>
   );

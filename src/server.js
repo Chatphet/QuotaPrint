@@ -152,16 +152,30 @@ app.get("/api/sumUser", async function (req, res, next) {
 
 
 app.get("/api/division", async function (req, res, next) {
+    const year = req.query.year;
+    // console.log('Filters received 4:', { year });
+    // console.log('------------');
+
+    let sqlQuery = `SELECT r.divisionName,
+                        YEAR(r.deliveryDate) AS year
+                    FROM 
+                        Request r
+                    INNER JOIN
+	                     QuotaPrint qp ON qp.requestID = r.requestID
+                    WHERE 1=1`;
+
+    let queryParams = [];
+    
+    if (year) {
+        sqlQuery += ` AND YEAR(r.deliveryDate) = @year`;
+        queryParams.push({ name: 'year', type: sql.Int, value: parseInt(year) });
+    }
+
+    sqlQuery += ` GROUP BY r.divisionName, YEAR(r.deliveryDate)
+                  ORDER BY r.divisionName ASC`;
+
     try {
-        const data = await connectAndQuery(`SELECT r.divisionName
-                                            FROM 
-                                                Request r
-                                            INNER JOIN
-	                                            QuotaPrint qp ON qp.requestID = r.requestID
-                                            GROUP BY 
-                                                r.divisionName
-                                            ORDER BY   
-                                                r.divisionName ASC;`);
+        const data = await connectAndQuery(sqlQuery, queryParams);
         res.json(data);
     } catch (error) {
         console.error('Error querying database:', error);

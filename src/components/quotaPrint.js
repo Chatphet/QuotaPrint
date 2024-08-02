@@ -50,7 +50,7 @@ function QuotaPrint() {
                 setStatuses(statusData);
 
                 const sumYearData = sumYearResponse.data;
-                const yearData = [...new Set(sumYearData.map(item => item.year))].sort((a, b) => b - a);
+                const yearData = [...new Set(sumYearData.map(item => item.year))].sort((a, b) => b - a); // สร้างลิสต์ปีที่ไม่ซ้ำและเรียงลำดับจากมากไปน้อย
                 setYears(yearData);
 
                 setSumYearData(sumYearData);
@@ -68,10 +68,10 @@ function QuotaPrint() {
         };
 
         fetchData();
-    }, []);
+    }, []); // ทำให้ useEffect ทำงานเพียงครั้งเดียวเมื่อ component ถูกโหลด
 
     useEffect(() => {
-        
+        // Filter sumYearData based on filter criteria
         const filteredSumYear = sumYearData.filter(item => {
             const isYearMatch = !filterCriteria.year || item.year === filterCriteria.year;
             const isBlackWhiteMatch = !filterCriteria.blackWhite || item.totalBlackWhite > 0;
@@ -82,6 +82,7 @@ function QuotaPrint() {
 
         setFilteredSumYearData(filteredSumYear);
 
+        // Also filter sumUserData based on filter criteria
         const filteredSumUser = sumUserData.filter(item => {
             const isYearMatch = !filterCriteria.year || item.year === filterCriteria.year;
             return isYearMatch;
@@ -91,58 +92,52 @@ function QuotaPrint() {
     }, [filterCriteria, sumYearData, sumUserData]);
 
     const fetchFilteredData = async (year, division, user, startDate, endDate, status, blackWhite, color) => {
-    try {
-        const [listResponse, sumYearResponse, sumUserResponse, divisionResponse] = await Promise.all([
-            axios.get('http://localhost:5000/api/list', {
-                params: {
-                    year,
-                    division,
-                    user,
-                    startDate: startDate ? moment(startDate).format('YYYY-MM-DD') : null,
-                    endDate: endDate ? moment(endDate).format('YYYY-MM-DD') : null,
-                    status,
-                    blackWhite,
-                    color
-                }
-            }),
-            axios.get('http://localhost:5000/api/sumYear', {
-                params: { year }
-            }),
-            axios.get('http://localhost:5000/api/sumUser', {
-                params: { year }
-            }),
-            axios.get('http://localhost:5000/api/division', {
-                params: { year }
-            }),
-        ]);
-
-        // console.log('List Response Data:', listResponse.data);
-        // console.log('Sum Year Response Data:', sumYearResponse.data);
-        // console.log('Sum User Response Data:', sumUserResponse.data);
-        // console.log('Division Response Data:', divisionResponse.data);
-
-        const formattedData = listResponse.data.map(row => ({
-            ...row,
-            deliveryDate: moment(row.deliveryDate).format('DD-MM-YYYY'),
-            requestDateStart: moment(row.requestDateStart).format('DD-MM-YYYY'),
-            requestDateEnd: moment(row.requestDateEnd).format('DD-MM-YYYY'),
-            priorityName: row.priorityName
-        }));
-
-        setData(formattedData);
-        setFilteredData(formattedData);
-        setSumYearData(sumYearResponse.data);
-        setSumUserData(sumUserResponse.data);
-        setDivisions(divisionResponse.data.map(item => item.divisionName));
-
-    } catch (error) {
-        console.error('Error fetching filtered data:', error);
-    }
-};
-
+        try {
+            const [listResponse, sumYearResponse, sumUserResponse] = await Promise.all([
+                axios.get('http://localhost:5000/api/list', {
+                    params: {
+                        year,
+                        division,
+                        user,
+                        startDate: startDate ? moment(startDate).format('YYYY-MM-DD') : null,
+                        endDate: endDate ? moment(endDate).format('YYYY-MM-DD') : null,
+                        status,
+                        blackWhite,
+                        color
+                    }
+                }),
+                axios.get('http://localhost:5000/api/sumYear', {
+                    params: { year }
+                }),
+                axios.get('http://localhost:5000/api/sumUser', {
+                    params: { year }
+                })
+            ]);
+    
+            // console.log('List Response Data:', listResponse.data);
+            // console.log('Sum Year Response Data:', sumYearResponse.data);
+            // console.log('Sum User Response Data:', sumUserResponse.data);
+    
+            const formattedData = listResponse.data.map(row => ({
+                ...row,
+                deliveryDate: moment(row.deliveryDate).format('DD-MM-YYYY'),
+                requestDateStart: moment(row.requestDateStart).format('DD-MM-YYYY'),
+                requestDateEnd: moment(row.requestDateEnd).format('DD-MM-YYYY'),
+                priorityName: row.priorityName
+            }));
+    
+            setData(formattedData);
+            setFilteredData(formattedData);
+            setSumYearData(sumYearResponse.data);
+            setSumUserData(sumUserResponse.data);
+    
+        } catch (error) {
+            console.error('Error fetching filtered data:', error);
+        }
+    };
 
     const handleFilter = () => {
-
+        // Update filter criteria state
         setFilterCriteria({
             year: filterYear,
             blackWhite: filterBlackWhite,
@@ -250,6 +245,7 @@ function QuotaPrint() {
                 </div>
             </div>
 
+            {/* Filter Modal */}
             <Modal
                 open={filterModalOpen}
                 onClose={() => setFilterModalOpen(false)}

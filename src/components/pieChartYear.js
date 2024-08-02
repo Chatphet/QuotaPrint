@@ -31,6 +31,7 @@ function PieChartYear({ data }) {
         series={[
           {
             data: pieData,
+            valueFormatter: (v) => `จำนวน ${v.value} แผ่น`,
           },
         ]}
         {...size}

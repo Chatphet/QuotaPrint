@@ -206,8 +206,8 @@ function QuotaPrint() {
 
     return (
         <div>
-            <h1 style={{ display: 'flex', alignItems: 'center', justifyContent: 'center' }}>Quota Print</h1>
-            <div style={{ display: 'flex', justifyContent: 'space-between', marginBottom: '10px', padding: '0 1%' }}>
+            <h1 style={{ display: 'flex', alignItems: 'center', justifyContent: 'center', margin: '1%' }}>Quota Print</h1>
+            <div style={{ display: 'flex', justifyContent: 'space-between', margin: '10px' }}>
                 <div style={{ flex: 1 }}>
                     <PieChartYear data={filteredSumYearData} />
                 </div>

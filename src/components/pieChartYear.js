@@ -34,20 +34,6 @@ function PieChartYear({ data }) {
             valueFormatter: (v) => `จำนวน ${v.value} แผ่น`,
           },
         ]}
-        slotProps={{
-          legend: {      
-            direction: 'column',
-            position: {
-              vertical: 'middle',
-              horizontal: 'right',
-            },
-            padding: 2,
-            itemMarkWidth: 15,
-            itemMarkHeight: 15,
-            markGap: 5,
-            itemGap: 8,
-          }
-        }}
         {...size}
       />
     </div>
